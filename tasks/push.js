@@ -38,38 +38,50 @@ module.exports = function(grunt) {
     return prefix + text;
   };
 
-  function credentials(host, remoteBase, done) {
+  function credentials(host, remoteBase, username, password, done) {
     // Ask for username & password without prompts
     prompt.start();
     prompt.message = '';
     prompt.delimiter = '';
 
-    var schema = {
-      properties: {
-        username: {
-          description: 'FTP username:'.cyan,
-        },
-        password: {
-          description: 'FTP password:'.cyan,
-          hidden: true,
-        }
-      },
-    };
+    var schema = { properties: { } };
+
+    if (typeof username == 'undefined') {
+      schema.properties.username = {
+        description: 'FTP username:'.cyan,
+      };
+    }
+
+    if (typeof password == 'undefined') {
+      schema.properties.password = {
+        description: 'FTP password:'.cyan,
+        hidden: true
+      };
+    }
+
     prompt.get(schema, function(err, result) {
       if (err) {
         throw err;
       }
 
+      if (typeof username == 'undefined') {
+        username = result.username;
+      }
+
+      if (typeof password == 'undefined') {
+        password = result.password;
+      }
+
       // Login into the system
       ftpin = new JSFtp({
         host: host,
-        user: result.username,
-        pass: result.password,
+        user: username,
+        pass: password,
       });
       ftpout = new JSFtp({
         host: host,
-        user: result.username,
-        pass: result.password,
+        user: username,
+        pass: password,
       });
 
       // Check login credentials
@@ -217,7 +229,7 @@ module.exports = function(grunt) {
               callback();
               return;
             }
-            
+
             grunt.verbose.writeln('changing file perms...');
 
             // 511 = 0777 octal
@@ -312,7 +324,7 @@ module.exports = function(grunt) {
     async.waterfall([
       // Login to the FTP server
       function(done) {
-        credentials(options.host, options.remoteBase, function(err) {
+        credentials(options.host, options.remoteBase, options.username, options.password, function(err) {
           done(err);
         });
       },
