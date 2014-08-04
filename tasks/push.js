@@ -20,7 +20,7 @@ module.exports = function(grunt) {
   var ftpin, ftpout, disablePerms;
 
   var curcol = 0;
-  var totalcols = process.stdout.columns;
+  var totalcols = process.stdout.isTTY ? process.stdout.columns : 80;
   var wrap = function(text) {
     curcol += text.length;
     curcol %= totalcols;
